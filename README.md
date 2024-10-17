@@ -19,7 +19,7 @@ Without python3.12, you can install marcnv using mamba:
 mamba env create -f conda_example.yaml
 ```
 
-This gives you 2 entrypoints:
+This gives you the following entrypoint:
 
 - `marcnv-classify` - run marCNV for the JSON annotation of a particular CNV region.
 
@@ -31,25 +31,9 @@ First, you need annotated CNV region, for example `annotation.json`. Then to pre
 marcnv-classify annotation.json --output isv.json 2> log.err
 ```
 
-### Options
-
-Adding flag `-j` can output json file with all needed data for classification.
-Flag `-s` skips the automatic classification if you need only the json output.
-
-```bash
-marcnv-single chr16:34289161-34490212/loss -j test.json -s
-```
-
-### Batch annotation
-
-Alternatively use the batch script if you have more CNVs needed to classify (accepts CNVs in .bed or .tsv file, outputs .tsv file with all annotated
-information).
-
-```bash
-marcnv-batch cnvs.bed cnvs_annotated.tsv
-```
-
 ## Development
+
+Poetry is used to package the application. It is required to run `poetry build` and `poetry install` to recreate the `poetry.lock` containing frozen versions of dependencies.
 
 There are some changes whether you develop on machines with Python 3.12 and on machines without Python 3.12.
 If you cannot install python3.12 and are limited to conda environments, skip to the next guide.
@@ -74,10 +58,7 @@ Activate the virtual environment where dependencies are installed:
 poetry shell
 ```
 
-All dependencies are now installed and you can run any marcnv code using:
-
-- entrypoint commands `marcnv-single {ARGS}` and `marcnv-batch {ARGS}`
-- `python {python_script}` like `python marcnv/classify_cnv.py {ARGS}`
+All dependencies are now installed and you can run entrypoint command directly or using python `{script}`.
 
 ### Development without python 3.12
 
@@ -95,10 +76,7 @@ Now in the cloned repository, install the package:
 poetry install
 ```
 
-All dependencies are now installed and you can run any marcnv code using:
-
-- entrypoint commands `marcnv-single {ARGS}` and `marcnv-batch {ARGS}`
-- `python {python_script}` like `python marcnv/classify_cnv.py {ARGS}`
+All dependencies are now installed and you can run entrypoint command directly or using `python {script}`.
 
 ### Adding/removing dependencies
 
@@ -115,6 +93,18 @@ Install again:
 ```sh
 poetry install
 ```
+
+### Style and formatting
+
+Pre-commit is used to enforce the common style and linting, defined in .pre-commit-config.yaml.
+
+To set up pre-commit, initially run:
+
+```sh
+pre-commit install
+```
+
+Then, before each commit, an automatic linting and formatting will run and potentially prompt to review the made changes.
 
 ### Conventional PRs
 

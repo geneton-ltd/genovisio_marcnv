@@ -10,7 +10,7 @@ from marcnv.src.acmg.acmg_classify import MarCNVClassifier
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Classify CNV and/or find intersecting items in MongoDB collections.")
+    parser = argparse.ArgumentParser(description="Classify annotated CNV.")
     parser.add_argument("input", help="Annotated CNV stored as json")
     parser.add_argument("--output", help="Path to store the prediction JSON. Else prints to stdout.", default=None)
     args = parser.parse_args()
