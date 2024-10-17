@@ -17,7 +17,7 @@ class Severity(enum.StrEnum):
         severity_thresholds = [-1.0 + epsilon, -0.9 + epsilon, 0.9, 1.0]
         severity_index = bisect.bisect(severity_thresholds, score)
         vals = list(cls)
-        return cls(vals[severity_index - 1])
+        return cls(vals[severity_index])
 
 
 @dataclass

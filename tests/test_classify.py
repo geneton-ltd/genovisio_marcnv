@@ -51,4 +51,4 @@ def test_classify():
         ],
     )
 
-    assert result.severity == classification.Severity.LBENIGN
+    assert result.severity == classification.Severity.VOUS
