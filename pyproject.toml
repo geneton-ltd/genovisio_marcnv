@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "marcnv"
+version = "0.1.1"
+description = "Automatic evaluation of ACMG criteria for CNV"
+authors = ["Marcel Kucharik <marcel.kucharik@geneton.sk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+pandas = ">=2.2"
+annotation = {git = "https://github.com/geneton-ltd/genovisio_annotation.git#0.1.0"}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.0.0"
+
+[tool.poetry.scripts]
+marcnv-classify = "marcnv.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
