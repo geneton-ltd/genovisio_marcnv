@@ -97,8 +97,8 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
     inside_only_regions = annot.get_triplosensitivity_regions(annotation.enums.OverlapType.inside_only)
     print(f"Evaluating section 2: {inside_only_regions=}", file=sys.stderr)
     if len(inside_only_regions) > 0:
-        if len(inside_only_regions) != 1:
-            raise ValueError(f"More than one TS region found. {inside_only_regions}")
+        # if len(inside_only_regions) != 1:
+        #     raise ValueError(f"More than one TS region found. {inside_only_regions}")
         ts_range = inside_only_regions[0]  # TODO why just one?
         reason = (
             f'Completely contains an established TS region {ts_range["ISCA Region Name"]} with TS score '
@@ -109,8 +109,8 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
     inside_only_genes = annot.get_triplosensitivity_genes(annotation.enums.OverlapType.inside_only)
     print(f"Evaluating section 2: {inside_only_genes=}", file=sys.stderr)
     if len(inside_only_genes) > 0:
-        if len(inside_only_genes) != 1:  # TODO why just one?
-            raise ValueError(f"More than one TS gene found. {inside_only_genes}")
+        # if len(inside_only_genes) != 1:  # TODO why just one?
+        #     raise ValueError(f"More than one TS gene found. {inside_only_genes}")
         hi_gene = inside_only_genes[0]
         reason = f'Completely contains an established TS gene {hi_gene["Gene Symbol"]} with TS score {hi_gene["Triplosensitivity Score"]}.'
         return "2A", reason
@@ -243,8 +243,8 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
     inside_only_regions = annot.get_haploinsufficient_regions(annotation.enums.OverlapType.inside_only)
     print(f"Evaluating section 2: {inside_only_regions=}", file=sys.stderr)
     if len(inside_only_regions) > 0:
-        if len(inside_only_regions) != 1:
-            raise ValueError(f"More than one HI region found. {inside_only_regions}")
+        # if len(inside_only_regions) != 1:
+        #     raise ValueError(f"More than one HI region found. {inside_only_regions}")
         hi_range = inside_only_regions[0]  # TODO why just one?
         reason = (
             f'Completely contains an established HI region {hi_range["ISCA Region Name"]} with HI score '
@@ -255,8 +255,8 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
     inside_only_genes = annot.get_haploinsufficient_genes(annotation.enums.OverlapType.inside_only)
     print(f"Evaluating section 2: {inside_only_genes=}", file=sys.stderr)
     if len(inside_only_genes) > 0:
-        if len(inside_only_genes) != 1:  # TODO why just one?
-            raise ValueError(f"More than one HI gene found. {inside_only_genes}")
+        # if len(inside_only_genes) != 1:  # TODO why just one?
+        #     raise ValueError(f"More than one HI gene found. {inside_only_genes}")
         hi_gene = inside_only_genes[0]
         reason = f'Completely contains an established HI gene {hi_gene["Gene Symbol"]} with HI score {hi_gene["Haploinsufficiency Score"]}.'
         return "2A", reason
