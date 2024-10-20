@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1](https://github.com/geneton-ltd/genovisio_marcnv/compare/v0.1.0...v0.1.1) (2024-10-20)
+
+
+### Performance Improvements
+
+* bumped annotation package ([d84f1e5](https://github.com/geneton-ltd/genovisio_marcnv/commit/d84f1e5ce34c94764467f0cd4ed79f6cf69a76e7))
+
+
+### Documentation
+
+* updated older naming of marCNV to marcnv ([1ffe6a8](https://github.com/geneton-ltd/genovisio_marcnv/commit/1ffe6a85e2c7420f3c95ca23a3c5faa1b84d4c4c))
+* updated README ([3138038](https://github.com/geneton-ltd/genovisio_marcnv/commit/3138038028b54143d87b74276f6ad8a503734541))
+
 ## 0.1.0 (2024-10-17)
 
 
