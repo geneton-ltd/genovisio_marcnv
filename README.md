@@ -10,7 +10,7 @@ Automatic evaluation of ACMG criteria for CNV based on .json file with data from
 In python3.12 you can simply use pip to install marCNV:
 
 ```bash
-pip install git+https://github.com/geneton-ltd/genovisio_MarCNV.git
+pip install git+https://github.com/geneton-ltd/genovisio_marcnv.git
 ```
 
 Without python3.12, you can install marcnv using mamba:
