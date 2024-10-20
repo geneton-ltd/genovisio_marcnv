@@ -10,7 +10,7 @@ Automatic evaluation of ACMG criteria for CNV based on .json file with data from
 In python3.12 you can simply use pip to install marCNV:
 
 ```bash
-pip install git+https://github.com/geneton-ltd/genovisio_MarCNV.git
+pip install git+https://github.com/geneton-ltd/genovisio_marcnv.git
 ```
 
 Without python3.12, you can install marcnv using mamba:
@@ -25,7 +25,7 @@ This gives you the following entrypoint:
 
 ## Running
 
-First, you need annotated CNV region, for example `annotation.json`. Then to predict, run:
+First, you need annotated CNV region, for example `annotation.json`. To get this annotation, see [Annotation package](https://github.com/geneton-ltd/genovisio_annotation). Then to predict, run:
 
 ```sh
 marcnv-classify annotation.json --output isv.json 2> log.err
@@ -49,7 +49,7 @@ pipx install poetry
 Now in the cloned repository, install the package:
 
 ```sh
-poetry install
+poetry install --with dev
 ```
 
 Activate the virtual environment where dependencies are installed:
@@ -73,7 +73,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 Now in the cloned repository, install the package:
 
 ```sh
-poetry install
+poetry install --with dev
 ```
 
 All dependencies are now installed and you can run entrypoint command directly or using `python {script}`.

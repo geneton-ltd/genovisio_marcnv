@@ -76,8 +76,7 @@ def evaluate_gene(transcript_regions: list[annotation.TranscriptRegion]) -> tupl
     return most_severe_transcript_option, most_severe_transcript_reason, most_severe_transcript_name
 
 
-def get_reason_from_benigncnvs(cnv: annotation.CNVRegionAnnotation, benign_cnvs: list[dict[str, Any]]) -> str:
-    """Get reason from Benign CNVs."""
+def get_reason_from_benigncnvs(cnv: annotation.CNVRegionAnnotation, benign_cnvs: list[Any]) -> str:
     reasons: list[str] = []
     for benign_cnv in benign_cnvs:
         overlap = cnv.get_overlap_with_region(benign_cnv["start"], benign_cnv["end"])
@@ -94,7 +93,9 @@ def get_reason_from_benigncnvs(cnv: annotation.CNVRegionAnnotation, benign_cnvs:
 def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, str]:
     cont_eval: tuple[str, str] | None = None
 
-    inside_only_regions = annot.get_triplosensitivity_regions(annotation.enums.OverlapType.inside_only)
+    inside_only_regions = annot.get_triplosensitivity_regions(
+        annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES
+    )
     print(f"Evaluating section 2: {inside_only_regions=}", file=sys.stderr)
     if len(inside_only_regions) > 0:
         # if len(inside_only_regions) != 1:
@@ -106,7 +107,7 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
         )
         return "2A", reason
 
-    inside_only_genes = annot.get_triplosensitivity_genes(annotation.enums.OverlapType.inside_only)
+    inside_only_genes = annot.get_triplosensitivity_genes(annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {inside_only_genes=}", file=sys.stderr)
     if len(inside_only_genes) > 0:
         # if len(inside_only_genes) != 1:  # TODO why just one?
@@ -115,7 +116,7 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
         reason = f'Completely contains an established TS gene {hi_gene["Gene Symbol"]} with TS score {hi_gene["Triplosensitivity Score"]}.'
         return "2A", reason
 
-    all_ts_regions = annot.get_triplosensitivity_regions(annotation.enums.OverlapType.all)
+    all_ts_regions = annot.get_triplosensitivity_regions(annotation.enums.Overlap.ANY, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {all_ts_regions=}", file=sys.stderr)
     if len(all_ts_regions) > 0:
         max_overlap = max([annot.cnv.get_overlap_with_region(r["start"], r["end"]) for r in all_ts_regions])
@@ -127,16 +128,14 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
         return "2B", reason
 
     # Load (protein) coding genes and genes on breakpoints
-    gene_names = sorted(
-        [gene["gene_name"] for gene in annot.get_genes(overlap=annotation.enums.OverlapType.inside_only)]
-    )
+    gene_names = sorted([gene["gene_name"] for gene in annot.get_genes(overlap=annotation.enums.Overlap.ANY)])
     protein_genes_on_breakpoints = annot.get_genes(
-        gene_type="protein_coding", overlap=annotation.enums.OverlapType.partial_both
+        gene_type="protein_coding", overlap=annotation.enums.Overlap.START_OR_END
     )
     print(f"Evaluating section 2: {gene_names=}, {protein_genes_on_breakpoints=}", file=sys.stderr)
 
     # Compare protein coding genes in benign CNV - searching for identical gene content
-    benign_cnvs = annot.get_benign_cnvs_gs_outer()
+    benign_cnvs = annot.get_benign_cnvs_gs_outer(frequency_threshold=core.MIN_FREQUENCY_BENIGN)
     print(f"Evaluating section 2: {benign_cnvs=}", file=sys.stderr)
     for benign_cnv in benign_cnvs:
         genes_cnv = sorted([gene["gene_name"] for gene in benign_cnv["genes"]])
@@ -148,9 +147,7 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
     # Smaller than established benign CNV, breakpoints are OK
     for benign_cnv in benign_cnvs:
         if (
-            annot.cnv.is_overlapping(
-                benign_cnv["start"], benign_cnv["end"], annotation.enums.OverlapType.span_whole_only
-            )
+            annot.cnv.is_overlapping(benign_cnv["start"], benign_cnv["end"], annotation.enums.Overlap.SPAN_ENTIRE)
             and len(protein_genes_on_breakpoints) == 0
         ):
             reason = (
@@ -162,9 +159,7 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
     # Smaller than established benign CNV, breakpoints are NOT OK
     for benign_cnv in benign_cnvs:
         if (
-            annot.cnv.is_overlapping(
-                benign_cnv["start"], benign_cnv["end"], annotation.enums.OverlapType.span_whole_only
-            )
+            annot.cnv.is_overlapping(benign_cnv["start"], benign_cnv["end"], annotation.enums.Overlap.SPAN_ENTIRE)
             and len(protein_genes_on_breakpoints) > 0
         ):
             gene_names = [g["gene_name"] for g in protein_genes_on_breakpoints]
@@ -196,14 +191,14 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
         cont_eval = "2G", get_reason_from_benigncnvs(annot.cnv, benign_cnvs)
 
     # Complete containment of an HI gene
-    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.OverlapType.inside_only):
+    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES):
         print(f"Evaluating section 2: inside_only{hi_gene=}", file=sys.stderr)
         reason = f'Completely contains an established HI gene {hi_gene["Gene Symbol"]} with HI score {hi_gene["Haploinsufficiency Score"]}.'
         if cont_eval is None:
             cont_eval = "2H", reason
 
     # Breakpoints with a hi_gene
-    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.OverlapType.span_whole_only):
+    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.Overlap.SPAN_ENTIRE, core.HI_TS_SCORES):
         print(f"Evaluating section 2: span_whole_only{hi_gene=}", file=sys.stderr)
         reason = (
             f'Both breakpoints are within the same HI gene {hi_gene["Gene Symbol"]} - gene-level sequence variant, possibly resulting '
@@ -211,14 +206,14 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
         )
         return "2I", reason
 
-    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.OverlapType.partial_both):
+    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.Overlap.START_OR_END, core.HI_TS_SCORES):
         print(f"Evaluating section 2: partial_both{hi_gene=}", file=sys.stderr)
         reason = f'One breakpoint is within an established HI gene {hi_gene["Gene Symbol"]}, the patient’s phenotype is unknown.'
         if cont_eval is None:
             cont_eval = "2J", reason
 
     # Breakpoint within other gene
-    genes_on_breakpoints = annot.get_genes(overlap=annotation.enums.OverlapType.partial_both)
+    genes_on_breakpoints = annot.get_genes(overlap=annotation.enums.Overlap.START_OR_END)
     if len(genes_on_breakpoints) > 0:
         gene_names = [g["gene_name"] for g in genes_on_breakpoints]
         reason = f"One or both breakpoints are within gene(s) of no established clinical significance ({gene_names})."
@@ -240,7 +235,9 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
     if annot.cnv.is_duplication:
         return evaluate_section2_duplication(annot)
 
-    inside_only_regions = annot.get_haploinsufficient_regions(annotation.enums.OverlapType.inside_only)
+    inside_only_regions = annot.get_haploinsufficient_regions(
+        annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES
+    )
     print(f"Evaluating section 2: {inside_only_regions=}", file=sys.stderr)
     if len(inside_only_regions) > 0:
         # if len(inside_only_regions) != 1:
@@ -252,7 +249,7 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
         )
         return "2A", reason
 
-    inside_only_genes = annot.get_haploinsufficient_genes(annotation.enums.OverlapType.inside_only)
+    inside_only_genes = annot.get_haploinsufficient_genes(annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {inside_only_genes=}", file=sys.stderr)
     if len(inside_only_genes) > 0:
         # if len(inside_only_genes) != 1:  # TODO why just one?
@@ -262,7 +259,7 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
         return "2A", reason
 
     # Evaluation of every single HI gene:
-    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.OverlapType.all):
+    for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.Overlap.ANY, core.HI_TS_SCORES):
         gene_info = annot.get_gene_by_name(hi_gene["Gene Symbol"])
         if gene_info is None:
             print(
@@ -286,7 +283,7 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
             cont_eval = option, reason
 
     # Partial overlap with hi_range
-    hi_regions = annot.get_haploinsufficient_regions(annotation.enums.OverlapType.all)
+    hi_regions = annot.get_haploinsufficient_regions(annotation.enums.Overlap.ANY, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {hi_regions=}", file=sys.stderr)
     if len(hi_regions) > 0:
         names = [r["ISCA Region Name"] for r in hi_regions]
@@ -298,12 +295,10 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
         return "2B", reason
 
     # Completely contained within a benign CNV
-    benign_cnvs = annot.get_benign_cnvs_gs_outer()
+    benign_cnvs = annot.get_benign_cnvs_gs_outer(core.MIN_FREQUENCY_BENIGN)
     print(f"Evaluating section 2: {benign_cnvs=}", file=sys.stderr)
     for benign_cnv in benign_cnvs:
-        if annot.cnv.is_overlapping(
-            benign_cnv["start"], benign_cnv["end"], annotation.enums.OverlapType.span_whole_only
-        ):
+        if annot.cnv.is_overlapping(benign_cnv["start"], benign_cnv["end"], annotation.enums.Overlap.SPAN_ENTIRE):
             reason = (
                 f'An established benign CNV {benign_cnv["variantaccession"]} with pubmedid {benign_cnv.get("pubmedid", "UNKNOWN")} '
                 f'completely contains the target CNV.'
@@ -355,7 +350,7 @@ class MarCNVClassifier:
     def _evaluate_section1(self) -> classification.SectionResult:
         # Find number of genes and regulatory elements
         gene_count = len(self.annot.get_genes(gene_type="protein_coding"))
-        enhancers_count = len(self.annot.get_enhancers())
+        enhancers_count = self.annot.count_regulatory_types()["enhancer"]
 
         print(f"Evaluating section 1: {gene_count=}, {enhancers_count=}", file=sys.stderr)
         # Pick final option and assign reason

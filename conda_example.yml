@@ -6,4 +6,4 @@ dependencies:
   - python=3.12
   - pip
   - pip:
-      - git+https://github.com/cuspuk/genovisio_MarCNV.git
+      - git+https://github.com/geneton-ltd/genovisio_marcnv.git
