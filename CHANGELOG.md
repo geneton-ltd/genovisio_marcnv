@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/geneton-ltd/genovisio_marcnv/compare/v0.1.1...v0.1.2) (2024-10-30)
+
+
+### Bug Fixes
+
+* fixed transcript evaluation and allowed to print multiple HI/TS results ([08cbf12](https://github.com/geneton-ltd/genovisio_marcnv/commit/08cbf120d7e36dd65d7e75b1cab33c18db2a6c2d))
+
 ## [0.1.1](https://github.com/geneton-ltd/genovisio_marcnv/compare/v0.1.0...v0.1.1) (2024-10-20)
 
 
