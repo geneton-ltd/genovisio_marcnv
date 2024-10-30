@@ -51,7 +51,7 @@ def evaluate_transcript(transcript: annotation.TranscriptRegion) -> tuple[str | 
         )
 
     # TODO ?
-    # print(f'WARNING: transcript {transcript["ID"]} is not evaluated - it is wholly inside the CNV, although the gene is not.') TODO do we need this?
+    # print(f'WARNING: transcript {transcript["ID"]} is not evaluated - it is wholly inside the CNV, although the gene is not.')
     return None, None
 
 
@@ -69,9 +69,6 @@ def evaluate_gene(transcript_regions: list[annotation.TranscriptRegion]) -> tupl
                 most_severe_transcript_name = transcript["identifier"]
                 most_severe_transcript_reason = reason
                 most_severe_transcript_option = option
-
-    # TODO: check if this is correct,
-    assert most_severe_transcript_option != "", "Transcripts were evaluated incorrectly."
 
     return most_severe_transcript_option, most_severe_transcript_reason, most_severe_transcript_name
 
@@ -97,24 +94,25 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
         annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES
     )
     print(f"Evaluating section 2: {inside_only_regions=}", file=sys.stderr)
-    if len(inside_only_regions) > 0:
-        # if len(inside_only_regions) != 1:
-        #     raise ValueError(f"More than one TS region found. {inside_only_regions}")
-        ts_range = inside_only_regions[0]  # TODO why just one?
-        reason = (
-            f'Completely contains an established TS region {ts_range["ISCA Region Name"]} with TS score '
-            f'{ts_range["Triplosensitivity Score"]}.'
-        )
-        return "2A", reason
+    if (count := len(inside_only_regions)) > 0:
+        scores = [int(r["Triplosensitivity Score"]) for r in inside_only_regions]
+        names = [r["ISCA Region Name"] for r in inside_only_regions]
+        if len(set(scores)) == 1:
+            detail = f'Found {count} such regions: {', '.join(names)}; all with TS score {scores[0]}.'
+        else:
+            detail = f'Found {count} such regions: {', '.join(names)} with TS scores: {scores}, respectively.'
+        return "2A", "Completely contains at least one established TS region. " + detail
 
     inside_only_genes = annot.get_triplosensitivity_genes(annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {inside_only_genes=}", file=sys.stderr)
-    if len(inside_only_genes) > 0:
-        # if len(inside_only_genes) != 1:  # TODO why just one?
-        #     raise ValueError(f"More than one TS gene found. {inside_only_genes}")
-        hi_gene = inside_only_genes[0]
-        reason = f'Completely contains an established TS gene {hi_gene["Gene Symbol"]} with TS score {hi_gene["Triplosensitivity Score"]}.'
-        return "2A", reason
+    if (count := len(inside_only_genes)) > 0:
+        scores = [int(g["Triplosensitivity Score"]) for g in inside_only_genes]
+        names = [g["Gene Symbol"] for g in inside_only_genes]
+        if len(set(scores)) == 1:
+            detail = f'Found {count} such genes: {', '.join(names)}; all with TS score {scores[0]}.'
+        else:
+            detail = f'Found {count} such genes: {', '.join(names)} with TS scores: {scores}, respectively.'
+        return "2A", "Completely contains at least one established TS gene. " + detail
 
     all_ts_regions = annot.get_triplosensitivity_regions(annotation.enums.Overlap.ANY, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {all_ts_regions=}", file=sys.stderr)
@@ -174,8 +172,7 @@ def evaluate_section2_duplication(annot: annotation.Annotation) -> tuple[str, st
     protein_genes = annot.get_genes(gene_type="protein_coding")
     print(f"Evaluating section 2: {protein_genes=}", file=sys.stderr)
     for benign_cnv in benign_cnvs:
-        # TODO change to overlap method
-        if benign_cnv["start"] > annot.cnv.start and benign_cnv["end"] < annot.cnv.end:
+        if annot.cnv.is_overlapping(benign_cnv["start"], benign_cnv["end"], annotation.enums.Overlap.CONTAINED_INSIDE):
             other_genes = [
                 g for g in protein_genes if g["start"] >= benign_cnv["start"] or g["end"] <= benign_cnv["end"]
             ]
@@ -239,24 +236,25 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
         annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES
     )
     print(f"Evaluating section 2: {inside_only_regions=}", file=sys.stderr)
-    if len(inside_only_regions) > 0:
-        # if len(inside_only_regions) != 1:
-        #     raise ValueError(f"More than one HI region found. {inside_only_regions}")
-        hi_range = inside_only_regions[0]  # TODO why just one?
-        reason = (
-            f'Completely contains an established HI region {hi_range["ISCA Region Name"]} with HI score '
-            f'{int(hi_range["Haploinsufficiency Score"])}.'
-        )
-        return "2A", reason
+    if (count := len(inside_only_regions)) > 0:
+        scores = [int(r["Haploinsufficiency Score"]) for r in inside_only_regions]
+        names = [r["ISCA Region Name"] for r in inside_only_regions]
+        if len(set(scores)) == 1:
+            detail = f'Found {count} such regions: {', '.join(names)}; all with HI score {scores[0]}.'
+        else:
+            detail = f'Found {count} such regions: {', '.join(names)} with HI scores: {scores}, respectively.'
+        return "2A", "Completely contains at least one established HI region. " + detail
 
     inside_only_genes = annot.get_haploinsufficient_genes(annotation.enums.Overlap.CONTAINED_INSIDE, core.HI_TS_SCORES)
     print(f"Evaluating section 2: {inside_only_genes=}", file=sys.stderr)
-    if len(inside_only_genes) > 0:
-        # if len(inside_only_genes) != 1:  # TODO why just one?
-        #     raise ValueError(f"More than one HI gene found. {inside_only_genes}")
-        hi_gene = inside_only_genes[0]
-        reason = f'Completely contains an established HI gene {hi_gene["Gene Symbol"]} with HI score {hi_gene["Haploinsufficiency Score"]}.'
-        return "2A", reason
+    if (count := len(inside_only_genes)) > 0:
+        scores = [int(g["Haploinsufficiency Score"]) for g in inside_only_genes]
+        names = [g["Gene Symbol"] for g in inside_only_genes]
+        if len(set(scores)) == 1:
+            detail = f'Found {count} such genes: {', '.join(names)}; all with HI score {scores[0]}.'
+        else:
+            detail = f'Found {count} such genes: {', '.join(names)} with HI scores: {scores}, respectively.'
+        return "2A", "Completely contains at least one established HI gene. " + detail
 
     # Evaluation of every single HI gene:
     for hi_gene in annot.get_haploinsufficient_genes(annotation.enums.Overlap.ANY, core.HI_TS_SCORES):
@@ -268,7 +266,6 @@ def evaluate_section2(annot: annotation.Annotation) -> tuple[str, str]:
             continue
         if gene_info["gene_type"] != "protein_coding":
             print(f'WARNING: evaluated GENE TYPE is {gene_info["gene_type"]}')
-            # TODO what is the point of this warning?
 
         transcript_regions = annot.get_gene_transcript_regions(hi_gene["Gene Symbol"])
         print(f"Evaluating section 2: {transcript_regions=} for {hi_gene}", file=sys.stderr)
@@ -403,7 +400,7 @@ class MarCNVClassifier:
         common_variability_regions = self.annot.get_common_variability_regions()
         print(f"Evaluating section 4: {common_variability_regions=}", file=sys.stderr)
         if len(common_variability_regions) >= 1:
-            region = common_variability_regions[0]  # TODO why just one?
+            region = [r for r in common_variability_regions if r["population"] == "nfe"][0]
             reason = f'Common population variation {self.annot.cnv.genomic_coord} for population {region["population"]} has frequency of {region["frequency"] * 100.0}%.'
             option = "4O"
 
