@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.12"
-annotation = {git = "https://github.com/geneton-ltd/genovisio_annotation.git#0.2.0"}
+annotation = {git = "https://github.com/geneton-ltd/genovisio_annotation.git", tag= "v0.2.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0.0"
