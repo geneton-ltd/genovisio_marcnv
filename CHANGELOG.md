@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/geneton-ltd/genovisio_marcnv/compare/v0.1.2...v0.1.3) (2025-07-02)
+
+
+### Bug Fixes
+
+* deployment fixed to use release version ([4f5fcc5](https://github.com/geneton-ltd/genovisio_marcnv/commit/4f5fcc536befbc5191eb82349951952033dfe161))
+* deployment fixed to use release version ([c5a4c47](https://github.com/geneton-ltd/genovisio_marcnv/commit/c5a4c473a139500fe8b5e2736eb690a8a5a5c6de))
+
 ## [0.1.2](https://github.com/geneton-ltd/genovisio_marcnv/compare/v0.1.1...v0.1.2) (2024-10-30)
 
 
